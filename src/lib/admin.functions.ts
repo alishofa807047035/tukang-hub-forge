@@ -203,6 +203,7 @@ export const adminApprovePayment = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin.from("orders").select("user_id, order_number").eq("id", data.orderId).single();
+    if (!order) throw new Error("Pesanan tidak ditemukan");
     await supabaseAdmin.from("payment_confirmations").update({ status: "approved" }).eq("order_id", data.orderId);
     await pushStatus(supabaseAdmin, data.orderId, order.user_id, "diproses", "Pembayaran disetujui",
       "Pembayaran disetujui", `Pembayaran untuk ${order.order_number} telah disetujui dan pesanan diproses.`);
@@ -216,6 +217,7 @@ export const adminRejectPayment = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin.from("orders").select("user_id, order_number").eq("id", data.orderId).single();
+    if (!order) throw new Error("Pesanan tidak ditemukan");
     await supabaseAdmin.from("payment_confirmations").update({ status: "rejected" }).eq("order_id", data.orderId);
     await supabaseAdmin.from("orders").update({ reject_reason: data.reason }).eq("id", data.orderId);
     await pushStatus(supabaseAdmin, data.orderId, order.user_id, "ditolak", data.reason,
@@ -232,6 +234,7 @@ export const adminSetShipping = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin.from("orders").select("user_id, order_number").eq("id", data.orderId).single();
+    if (!order) throw new Error("Pesanan tidak ditemukan");
     await supabaseAdmin.from("orders").update({ courier: data.courier, tracking_number: data.tracking_number }).eq("id", data.orderId);
     await pushStatus(supabaseAdmin, data.orderId, order.user_id, "dikirim", `Resi ${data.tracking_number} (${data.courier})`,
       "Pesanan dikirim", `Pesanan ${order.order_number} dikirim via ${data.courier}, resi ${data.tracking_number}.`);
@@ -251,6 +254,7 @@ export const adminUpdateStatus = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { ORDER_STATUS_LABEL } = await import("./constants");
     const { data: order } = await supabaseAdmin.from("orders").select("user_id, order_number").eq("id", data.orderId).single();
+    if (!order) throw new Error("Pesanan tidak ditemukan");
     const label = (ORDER_STATUS_LABEL as Record<string, string>)[data.status] ?? data.status;
     await pushStatus(supabaseAdmin, data.orderId, order.user_id, data.status, `Status diperbarui: ${label}`,
       "Status pesanan diperbarui", `Pesanan ${order.order_number}: ${label}.`);
@@ -335,7 +339,7 @@ export const adminSaveCms = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    if (data.id) await supabaseAdmin.from(data.table).update(data.values).eq("id", data.id);
+    if (data.id) await supabaseAdmin.from(data.table).update(data.values as any).eq("id", data.id);
     else await supabaseAdmin.from(data.table).insert(data.values as any);
     return { ok: true };
   });

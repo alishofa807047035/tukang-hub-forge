@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCustomerStats } from "@/lib/orders.functions";
 import { getAddresses, saveAddress, deleteAddress, updateProfile } from "@/lib/account.functions";
 
-export const Route = createFileRoute("/account")({
+export const Route = createFileRoute("/account/")({
   head: () => ({ meta: [{ title: "Dashboard — TukangHub" }] }),
   component: AccountPage,
 });

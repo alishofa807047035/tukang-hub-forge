@@ -14,11 +14,13 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PaymentOrderNumberRouteImport } from './routes/payment.$orderNumber'
+import { Route as AccountOrdersRouteImport } from './routes/account.orders'
 
 const TrackingRoute = TrackingRouteImport.update({
   id: '/tracking',
@@ -45,6 +47,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -56,9 +63,9 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountIndexRoute = AccountIndexRouteImport.update({
-  id: '/account/',
-  path: '/account/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
 } as any)
 const ProductsSlugRoute = ProductsSlugRouteImport.update({
   id: '/products/$slug',
@@ -70,14 +77,21 @@ const PaymentOrderNumberRoute = PaymentOrderNumberRouteImport.update({
   path: '/payment/$orderNumber',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountOrdersRoute = AccountOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AccountRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
   '/tracking': typeof TrackingRoute
+  '/account/orders': typeof AccountOrdersRoute
   '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/account/': typeof AccountIndexRoute
@@ -90,6 +104,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
   '/tracking': typeof TrackingRoute
+  '/account/orders': typeof AccountOrdersRoute
   '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/account': typeof AccountIndexRoute
@@ -98,11 +113,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
   '/tracking': typeof TrackingRoute
+  '/account/orders': typeof AccountOrdersRoute
   '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/account/': typeof AccountIndexRoute
@@ -112,11 +129,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/auth'
     | '/cart'
     | '/checkout'
     | '/reset-password'
     | '/tracking'
+    | '/account/orders'
     | '/payment/$orderNumber'
     | '/products/$slug'
     | '/account/'
@@ -129,6 +148,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/reset-password'
     | '/tracking'
+    | '/account/orders'
     | '/payment/$orderNumber'
     | '/products/$slug'
     | '/account'
@@ -136,11 +156,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/auth'
     | '/cart'
     | '/checkout'
     | '/reset-password'
     | '/tracking'
+    | '/account/orders'
     | '/payment/$orderNumber'
     | '/products/$slug'
     | '/account/'
@@ -149,6 +171,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -156,7 +179,6 @@ export interface RootRouteChildren {
   TrackingRoute: typeof TrackingRoute
   PaymentOrderNumberRoute: typeof PaymentOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
-  AccountIndexRoute: typeof AccountIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
@@ -197,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -213,10 +242,10 @@ declare module '@tanstack/react-router' {
     }
     '/account/': {
       id: '/account/'
-      path: '/account'
+      path: '/'
       fullPath: '/account/'
       preLoaderRoute: typeof AccountIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/products/$slug': {
       id: '/products/$slug'
@@ -232,11 +261,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentOrderNumberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/orders': {
+      id: '/account/orders'
+      path: '/orders'
+      fullPath: '/account/orders'
+      preLoaderRoute: typeof AccountOrdersRouteImport
+      parentRoute: typeof AccountRoute
+    }
   }
 }
 
+interface AccountRouteChildren {
+  AccountOrdersRoute: typeof AccountOrdersRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountOrdersRoute: AccountOrdersRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
@@ -244,7 +294,6 @@ const rootRouteChildren: RootRouteChildren = {
   TrackingRoute: TrackingRoute,
   PaymentOrderNumberRoute: PaymentOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
-  AccountIndexRoute: AccountIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
 }
 export const routeTree = rootRouteImport

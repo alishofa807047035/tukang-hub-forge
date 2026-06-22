@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackingRouteImport } from './routes/tracking'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
@@ -16,7 +17,13 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as PaymentOrderNumberRouteImport } from './routes/payment.$orderNumber'
 
+const TrackingRoute = TrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -52,6 +59,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentOrderNumberRoute = PaymentOrderNumberRouteImport.update({
+  id: '/payment/$orderNumber',
+  path: '/payment/$orderNumber',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +71,8 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tracking': typeof TrackingRoute
+  '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
 }
@@ -68,6 +82,8 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tracking': typeof TrackingRoute
+  '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products': typeof ProductsIndexRoute
 }
@@ -78,6 +94,8 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tracking': typeof TrackingRoute
+  '/payment/$orderNumber': typeof PaymentOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/products/': typeof ProductsIndexRoute
 }
@@ -89,6 +107,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/reset-password'
+    | '/tracking'
+    | '/payment/$orderNumber'
     | '/products/$slug'
     | '/products/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +118,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/reset-password'
+    | '/tracking'
+    | '/payment/$orderNumber'
     | '/products/$slug'
     | '/products'
   id:
@@ -107,6 +129,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/reset-password'
+    | '/tracking'
+    | '/payment/$orderNumber'
     | '/products/$slug'
     | '/products/'
   fileRoutesById: FileRoutesById
@@ -117,12 +141,21 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TrackingRoute: typeof TrackingRoute
+  PaymentOrderNumberRoute: typeof PaymentOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tracking': {
+      id: '/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof TrackingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -172,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment/$orderNumber': {
+      id: '/payment/$orderNumber'
+      path: '/payment/$orderNumber'
+      fullPath: '/payment/$orderNumber'
+      preLoaderRoute: typeof PaymentOrderNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -181,6 +221,8 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TrackingRoute: TrackingRoute,
+  PaymentOrderNumberRoute: PaymentOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
 }

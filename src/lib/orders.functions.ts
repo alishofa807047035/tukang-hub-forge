@@ -157,7 +157,8 @@ export const submitPaymentProof = createServerFn({ method: "POST" })
       status: "pending",
     });
     await supabase.from("orders").update({ status: "menunggu_verifikasi" }).eq("id", data.orderId);
-    await supabase.from("order_status_history").insert({
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("order_status_history").insert({
       order_id: data.orderId, status: "menunggu_verifikasi", notes: "Bukti transfer diunggah",
     });
     await supabase.from("notifications").insert({

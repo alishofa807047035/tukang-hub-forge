@@ -82,12 +82,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "TukangHub — Marketplace Material Bangunan & Jasa Tukang" },
       { name: "description", content: "TukangHub menghubungkan Anda dengan jasa tukang terpercaya dan material bangunan berkualitas. Belanja semen, cat, pipa, dan kebutuhan proyek dengan mudah." },
       { name: "author", content: "TukangHub" },
-      { property: "og:title", content: "TukangHub — Marketplace Material Bangunan" },
-      { property: "og:description", content: "Jasa tukang terpercaya dan material bangunan berkualitas dalam satu platform." },
+      { property: "og:title", content: "TukangHub — Marketplace Material Bangunan & Jasa Tukang" },
+      { property: "og:description", content: "TukangHub menghubungkan Anda dengan jasa tukang terpercaya dan material bangunan berkualitas. Belanja semen, cat, pipa, dan kebutuhan proyek dengan mudah." },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "TukangHub" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "TukangHub — Marketplace Material Bangunan & Jasa Tukang" },
+      { name: "twitter:description", content: "TukangHub menghubungkan Anda dengan jasa tukang terpercaya dan material bangunan berkualitas. Belanja semen, cat, pipa, dan kebutuhan proyek dengan mudah." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/276559ca-1c2a-4416-b51f-215e13708d4e/id-preview-242ceb49--20b8143b-a149-4b36-bb9a-62c9cdfa6548.lovable.app-1782347286669.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/276559ca-1c2a-4416-b51f-215e13708d4e/id-preview-242ceb49--20b8143b-a149-4b36-bb9a-62c9cdfa6548.lovable.app-1782347286669.png" },
     ],
     links: [
       {

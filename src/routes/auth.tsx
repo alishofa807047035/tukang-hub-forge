@@ -6,7 +6,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Hammer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,10 +57,13 @@ function AuthPage() {
     navigate({ to: redirect ?? "/account" });
   }
   async function onGoogle() {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) return toast.error("Gagal masuk dengan Google");
-    if (result.redirected) return;
-    navigate({ to: redirect ?? "/account" });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${redirect ?? "/account"}`,
+      },
+    });
+    if (error) return toast.error(error.message);
   }
   async function onForgot(e: React.FormEvent) {
     e.preventDefault();

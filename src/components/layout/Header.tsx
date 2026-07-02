@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, User, Menu, Search, LogOut, LayoutDashboard, Package, X } from "lucide-react";
+import { ShoppingCart, User, Menu, Search, LogOut, LayoutDashboard, Package, X, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function Header() {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin, isTukang, signOut } = useAuth();
   const { count } = useCart();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -72,12 +72,28 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <div className="px-2 py-1.5 text-sm font-medium truncate">{profile?.fullname || user.email}</div>
+              <div className="px-2 py-1.5 text-sm font-medium">
+                <p className="truncate font-semibold text-foreground">{profile?.fullname || user.email}</p>
+                {isAdmin && <span className="inline-block mt-0.5 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">Admin</span>}
+                {isTukang && <span className="inline-block mt-0.5 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">Mitra Tukang</span>}
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild><Link to="/account"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link to="/account/orders"><Package className="mr-2 h-4 w-4" />Pesanan Saya</Link></DropdownMenuItem>
               {isAdmin && (
-                <DropdownMenuItem asChild><Link to="/admin"><LayoutDashboard className="mr-2 h-4 w-4" />Admin Panel</Link></DropdownMenuItem>
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" search={{ tab: "products" } as any}>
+                      <Plus className="mr-2 h-4 w-4" />Tambah Produk
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">
+                      <LayoutDashboard className="mr-2 h-4 w-4" />Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
+                </>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => { signOut(); navigate({ to: "/" }); }}>

@@ -14,11 +14,18 @@ import { formatRupiah, formatDate, slugify } from "@/lib/format";
 import {
   adminStats, adminListOrders, adminApprovePayment, adminRejectPayment, adminSetShipping, adminUpdateStatus,
   adminListProducts, adminSaveProduct, adminDeleteProduct, adminListCategories, adminSaveCategory, adminDeleteCategory,
-  adminListCustomers, adminGetSettings, adminSaveSettings, grantAdminSelf,
+  adminListCustomers, adminGetSettings, adminSaveSettings, grantAdminSelf, adminSeedStandardCategories,
 } from "@/lib/admin.functions";
 import { COURIERS, BANKS } from "@/lib/constants";
 
+interface AdminSearch {
+  tab?: string;
+}
+
 export const Route = createFileRoute("/admin")({
+  validateSearch: (search: Record<string, unknown>): AdminSearch => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
   head: () => ({ meta: [{ title: "Admin Panel — TukangHub" }, { name: "robots", content: "noindex" }] }),
   component: AdminPage,
 });
@@ -48,6 +55,24 @@ function AdminPage() {
 }
 
 function AdminInner() {
+  const search = Route.useSearch();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(search.tab || "dashboard");
+
+  useEffect(() => {
+    if (search.tab && search.tab !== activeTab) {
+      setActiveTab(search.tab);
+    }
+  }, [search.tab]);
+
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    navigate({
+      to: "/admin",
+      search: { tab: val },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-muted/20">
       <header className="border-b border-border bg-sidebar text-sidebar-foreground">
@@ -59,7 +84,7 @@ function AdminInner() {
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-4 py-6">
-        <Tabs defaultValue="dashboard">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="flex flex-wrap">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="orders">Pesanan</TabsTrigger>
@@ -164,13 +189,170 @@ function OrdersTab() {
   );
 }
 
+const STANDARD_TEMPLATES = [
+  {
+    name: "Semen Tiga Roda 40kg",
+    brand: "Tiga Roda",
+    weight: 40,
+    categorySlug: "semen-mortar",
+    description: "Semen Portland berkualitas tinggi (PCC) untuk berbagai pekerjaan konstruksi beton, plesteran, dan pemasangan bata.",
+    imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Semen Gresik 40kg",
+    brand: "Semen Gresik",
+    weight: 40,
+    categorySlug: "semen-mortar",
+    description: "Semen Portland berkualitas standar SNI, kuat tekan tinggi dan cocok untuk segala konstruksi cor.",
+    imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Semen MU-380 Perekat Bata Ringan 40kg",
+    brand: "Mortar Utama",
+    weight: 40,
+    categorySlug: "semen-mortar",
+    description: "Semen instan berkualitas tinggi untuk pekerjaan penempelan bata ringan (AAC) dengan daya rekat sangat kuat.",
+    imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Pasir Beton (Per Kubik/M3)",
+    brand: "Lokal",
+    weight: 1500,
+    categorySlug: "pasir-batu",
+    description: "Pasir cor beton murni tanpa campuran lumpur, sangat baik untuk konstruksi dak cor dan kolom.",
+    imageUrl: "https://images.unsplash.com/photo-1604147706283-d7119b5b822c?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Pasir Pasang (Per Kubik/M3)",
+    brand: "Lokal",
+    weight: 1400,
+    categorySlug: "pasir-batu",
+    description: "Pasir berkualitas untuk pekerjaan pasang bata merah, bata ringan, plesteran dinding, dan lantai semen.",
+    imageUrl: "https://images.unsplash.com/photo-1604147706283-d7119b5b822c?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Batu Split / Batu Pecah Cor 2/3 (Per Kubik/M3)",
+    brand: "Lokal",
+    weight: 1350,
+    categorySlug: "pasir-batu",
+    description: "Batu pecah split ukuran cor 2cm x 3cm dari batu kali/gunung berkualitas tinggi untuk kekuatan cor beton optimal.",
+    imageUrl: "https://images.unsplash.com/photo-1576085898323-218337e2343c?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Besi Beton Polos 8mm SNI",
+    brand: "SNI",
+    weight: 4.7,
+    categorySlug: "besi-baja",
+    description: "Besi beton polos ukuran diameter 8mm dengan panjang standar 12 meter bersertifikasi SNI untuk tulangan kolom praktis.",
+    imageUrl: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Besi Beton Polos 10mm SNI",
+    brand: "SNI",
+    weight: 7.4,
+    categorySlug: "besi-baja",
+    description: "Besi beton polos diameter 10mm dengan panjang standar 12 meter bersertifikasi SNI untuk struktur tulangan utama.",
+    imageUrl: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Baja Ringan Kanal C75 Ketebalan 0.75mm",
+    brand: "Taso",
+    weight: 5,
+    categorySlug: "besi-baja",
+    description: "Baja ringan berkualitas tinggi merek Taso ukuran lebar profil C75 tebal 0.75mm panjang 6 meter untuk rangka atap rumah modern.",
+    imageUrl: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Pipa PVC Rucika AW 1/2 Inch (Per Batang)",
+    brand: "Rucika",
+    weight: 1.2,
+    categorySlug: "pipa-sanitasi",
+    description: "Pipa PVC bertekanan tinggi kelas AW ukuran 1/2 inch panjang 4 meter. Sangat cocok untuk instalasi air bersih rumah tangga.",
+    imageUrl: "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Pipa PVC Rucika D 3 Inch (Per Batang)",
+    brand: "Rucika",
+    weight: 3.5,
+    categorySlug: "pipa-sanitasi",
+    description: "Pipa PVC kelas D ukuran 3 inch panjang 4 meter. Dirancang khusus untuk saluran pembuangan air limbah non-tekanan.",
+    imageUrl: "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Cat Tembok Dulux Catylac Putih 5kg",
+    brand: "Dulux",
+    weight: 5,
+    categorySlug: "cat-perlengkapan",
+    description: "Cat tembok interior berkualitas tinggi dengan formulasi warna cerah tahan lama dan daya sebar luas.",
+    imageUrl: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Kuas Cat Eterna 3 Inch",
+    brand: "Eterna",
+    weight: 0.1,
+    categorySlug: "cat-perlengkapan",
+    description: "Kuas cat bulu tebal dengan gagang kayu kualitas Eterna ukuran lebar 3 inch untuk meratakan cat di permukaan tembok atau kayu.",
+    imageUrl: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Kayu Kaso Borneo 4x6 (Per Batang)",
+    brand: "Lokal",
+    weight: 5.5,
+    categorySlug: "kayu-papan",
+    description: "Kayu kaso olahan borneo tebal 4cm lebar 6cm panjang 4 meter untuk rangka plafon atau bekisting.",
+    imageUrl: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Triplek Meranti Cor 9mm (Per Lembar)",
+    brand: "Lokal",
+    weight: 8,
+    categorySlug: "kayu-papan",
+    description: "Kayu lapis triplek meranti tebal 9mm ukuran standar 122cm x 244cm untuk bekisting cor beton maupun partisi.",
+    imageUrl: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Palu Kambing Tekiro 16 oz",
+    brand: "Tekiro",
+    weight: 0.6,
+    categorySlug: "alat-perkakas",
+    description: "Palu besi pencabut paku berkualitas tinggi dari Tekiro, gagang fiber dilapisi karet anti slip nyaman digunakan.",
+    imageUrl: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Sekop Pasir Besi Camel",
+    brand: "Camel",
+    weight: 2,
+    categorySlug: "alat-perkakas",
+    description: "Sekop cor pasir terbuat dari plat besi tebal berkualitas dengan gagang kayu kokoh berbentuk Y.",
+    imageUrl: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Seng Gelombang Gajah 0.20mm (Per Lembar)",
+    brand: "Gajah",
+    weight: 2.5,
+    categorySlug: "atap-plafon",
+    description: "Atap seng gelombang galvanis tebal 0.20mm panjang 1.8 meter lebar 80cm untuk atap ekonomis.",
+    imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=400&auto=format&fit=crop"
+  },
+  {
+    name: "Kabel Eterna NYM 2x1.5 (Roll 50 Meter)",
+    brand: "Eterna",
+    weight: 3.8,
+    categorySlug: "kelistrikan",
+    description: "Kabel listrik kawat tembaga ganda berkualitas SNI NYM 2x1.5 mm panjang 50 meter merek Eterna.",
+    imageUrl: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?q=80&w=400&auto=format&fit=crop"
+  }
+];
+
 function ProductsTab() {
   const listFn = useServerFn(adminListProducts);
   const saveFn = useServerFn(adminSaveProduct);
   const delFn = useServerFn(adminDeleteProduct);
   const catFn = useServerFn(adminListCategories);
-  const { data: products, refetch } = useQuery({ queryKey: ["admin-products"], queryFn: () => listFn() });
-  const { data: categories } = useQuery({ queryKey: ["admin-cats"], queryFn: () => catFn() });
+  const seedCatsFn = useServerFn(adminSeedStandardCategories);
+
+  const { data: products, refetch: refetchProducts } = useQuery({ queryKey: ["admin-products"], queryFn: () => listFn() });
+  const { data: categories, refetch: refetchCategories } = useQuery({ queryKey: ["admin-cats"], queryFn: () => catFn() });
   const [f, setF] = useState({ name: "", price: "", stock: "", weight: "", brand: "", category_id: "", description: "", imageUrl: "" });
 
   async function save() {
@@ -178,24 +360,101 @@ function ProductsTab() {
     try {
       await saveFn({ data: { slug: slugify(f.name) + "-" + Date.now().toString().slice(-4), name: f.name, price: Number(f.price || 0), stock: Number(f.stock || 0), weight: Number(f.weight || 0), brand: f.brand, category_id: f.category_id || null, description: f.description, images: f.imageUrl ? [f.imageUrl] : [], status: "active" } });
       setF({ name: "", price: "", stock: "", weight: "", brand: "", category_id: "", description: "", imageUrl: "" });
-      refetch(); toast.success("Produk disimpan");
+      refetchProducts(); toast.success("Produk disimpan");
     } catch (e: any) { toast.error(e?.message ?? "Gagal"); }
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-2">
+        {(categories ?? []).length === 0 && (
+          <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
+            <h4 className="font-display font-bold text-primary">Kategori Masih Kosong</h4>
+            <p className="mt-1 text-xs text-muted-foreground">Katalog kategori toko Anda masih kosong. Silakan inisialisasi kategori bahan bangunan standar untuk mempermudah penambahan produk.</p>
+            <Button size="sm" className="mt-3" onClick={async () => {
+              try {
+                await seedCatsFn();
+                toast.success("Kategori standar toko bangunan diinisialisasi");
+                refetchCategories();
+              } catch (e: any) {
+                toast.error(e?.message ?? "Gagal");
+              }
+            }}>Inisialisasi Kategori Standar</Button>
+          </div>
+        )}
         {(products ?? []).map((p: any) => (
           <div key={p.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
             <div><p className="font-semibold">{p.name}</p><p className="text-xs text-muted-foreground">{formatRupiah(p.price)} · Stok {p.stock} · {p.product_categories?.name ?? "Tanpa kategori"}</p></div>
-            <button onClick={async () => { await delFn({ data: { id: p.id } }); refetch(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+            <button onClick={async () => { await delFn({ data: { id: p.id } }); refetchProducts(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
           </div>
         ))}
         {(products ?? []).length === 0 && <p className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">Belum ada produk.</p>}
       </div>
       <div className="h-fit rounded-lg border border-border bg-card p-4">
-        <h3 className="mb-3 font-display font-bold">Tambah Produk</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-display font-bold">Tambah Produk</h3>
+          {(f.name || f.description || f.brand) && (
+            <button 
+              onClick={() => setF({ name: "", price: "", stock: "", weight: "", brand: "", category_id: "", description: "", imageUrl: "" })}
+              className="text-[10px] text-muted-foreground hover:text-primary font-medium"
+            >
+              Reset Form
+            </button>
+          )}
+        </div>
         <div className="space-y-2">
+          <div className="rounded border border-primary/20 bg-primary/5 p-2 mb-2">
+            <label className="block text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Template Toko Bangunan</label>
+            <select
+              className="h-8 w-full rounded border border-input bg-background px-2 text-xs font-medium text-foreground outline-none focus:ring-1 focus:ring-primary"
+              value=""
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                const template = STANDARD_TEMPLATES.find((t) => t.name === val);
+                if (template) {
+                  const cat = (categories ?? []).find((c: any) => c.slug === template.categorySlug);
+                  setF((prev) => ({
+                    ...prev,
+                    name: template.name,
+                    brand: template.brand,
+                    weight: template.weight.toString(),
+                    category_id: cat ? cat.id : "",
+                    description: template.description,
+                    imageUrl: template.imageUrl,
+                  }));
+                  toast.success(`Template "${template.name}" dimuat. Silakan isi harga dan stok.`);
+                }
+              }}
+            >
+              <option value="">-- Pilih Template Material --</option>
+              {Object.entries(
+                STANDARD_TEMPLATES.reduce((acc, item) => {
+                  const catLabel = item.categorySlug === "semen-mortar" ? "Semen & Mortar"
+                                 : item.categorySlug === "pasir-batu" ? "Pasir & Batu"
+                                 : item.categorySlug === "besi-baja" ? "Besi & Baja"
+                                 : item.categorySlug === "kayu-papan" ? "Kayu & Papan"
+                                 : item.categorySlug === "pipa-sanitasi" ? "Pipa & Sanitasi"
+                                 : item.categorySlug === "cat-perlengkapan" ? "Cat & Perlengkapan"
+                                 : item.categorySlug === "alat-perkakas" ? "Alat & Perkakas"
+                                 : item.categorySlug === "atap-plafon" ? "Atap & Plafon"
+                                 : "Kelistrikan";
+                  if (!acc[catLabel]) acc[catLabel] = [];
+                  acc[catLabel].push(item);
+                  return acc;
+                }, {} as Record<string, typeof STANDARD_TEMPLATES>)
+              ).map(([catName, items]) => (
+                <optgroup key={catName} label={catName}>
+                  {items.map((item) => (
+                    <option key={item.name} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
           <Input placeholder="Nama produk" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
             <option value="">Pilih kategori</option>
@@ -220,13 +479,28 @@ function CategoriesTab() {
   const listFn = useServerFn(adminListCategories);
   const saveFn = useServerFn(adminSaveCategory);
   const delFn = useServerFn(adminDeleteCategory);
+  const seedCatsFn = useServerFn(adminSeedStandardCategories);
   const { data: cats, refetch } = useQuery({ queryKey: ["admin-cats-tab"], queryFn: () => listFn() });
   const [name, setName] = useState("");
   return (
     <div className="max-w-lg space-y-3">
-      <div className="flex gap-2">
-        <Input placeholder="Nama kategori" value={name} onChange={(e) => setName(e.target.value)} />
+      <div className="flex flex-wrap gap-2">
+        <Input placeholder="Nama kategori" className="flex-1 min-w-[200px]" value={name} onChange={(e) => setName(e.target.value)} />
         <Button onClick={async () => { if (!name) return; await saveFn({ data: { name, slug: slugify(name) } }); setName(""); refetch(); toast.success("Kategori ditambah"); }}>Tambah</Button>
+        <Button 
+          variant="outline"
+          onClick={async () => {
+            try {
+              await seedCatsFn();
+              toast.success("Kategori standar berhasil diinisialisasi!");
+              refetch();
+            } catch (e: any) {
+              toast.error(e?.message ?? "Gagal");
+            }
+          }}
+        >
+          Inisialisasi Kategori Standar
+        </Button>
       </div>
       <div className="space-y-2">
         {(cats ?? []).map((c: any) => (

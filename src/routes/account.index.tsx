@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Package, MapPin, User as UserIcon, KeyRound, LayoutDashboard, Plus, Trash2 } from "lucide-react";
+import { Package, MapPin, User as UserIcon, KeyRound, LayoutDashboard, Plus, Trash2, ShieldCheck, Hammer } from "lucide-react";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/account/")({
 });
 
 function AccountPage() {
-  const { user, profile, loading, refresh } = useAuth();
+  const { user, profile, isAdmin, isTukang, loading, refresh } = useAuth();
   const navigate = useNavigate();
   const statsFn = useServerFn(getCustomerStats);
   const addrFn = useServerFn(getAddresses);
@@ -48,7 +48,41 @@ function AccountPage() {
   return (
     <PublicShell>
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <h1 className="font-display text-3xl font-extrabold">Halo, {profile?.fullname || "Pelanggan"}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="font-display text-3xl font-extrabold">Halo, {profile?.fullname || "Pelanggan"}</h1>
+          {isAdmin && <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Admin</span>}
+          {isTukang && <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600">Mitra Tukang</span>}
+        </div>
+        {isAdmin && (
+          <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-6 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg font-bold">Akses Akun Admin</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Sebagai admin, Anda memiliki akses penuh ke panel admin untuk mengelola produk, pesanan, kategori, dan pengaturan toko.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 shrink-0">
+                <Button asChild variant="outline">
+                  <Link to="/admin">
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Panel Admin
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/admin" search={{ tab: "products" } as any}>
+                    <Plus className="mr-2 h-4 w-4" /> Tambah Produk Baru
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard icon={LayoutDashboard} label="Total Pesanan" value={stats?.total ?? 0} />
           <StatCard icon={Package} label="Pesanan Aktif" value={stats?.active ?? 0} />
@@ -58,6 +92,7 @@ function AccountPage() {
         <Tabs defaultValue="orders" className="mt-8">
           <TabsList>
             <TabsTrigger value="orders"><Package className="mr-1 h-4 w-4" />Pesanan</TabsTrigger>
+            {isTukang && <TabsTrigger value="tukang"><Hammer className="mr-1 h-4 w-4" />Layanan Tukang</TabsTrigger>}
             <TabsTrigger value="address"><MapPin className="mr-1 h-4 w-4" />Alamat</TabsTrigger>
             <TabsTrigger value="profile"><UserIcon className="mr-1 h-4 w-4" />Profil</TabsTrigger>
             <TabsTrigger value="password"><KeyRound className="mr-1 h-4 w-4" />Password</TabsTrigger>
@@ -99,6 +134,30 @@ function AccountPage() {
             <div className="space-y-1"><Label>Password Baru</Label><Input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} /></div>
             <Button onClick={changePwd}>Ubah Password</Button>
           </TabsContent>
+          {isTukang && (
+            <TabsContent value="tukang" className="mt-4 max-w-lg space-y-4">
+              <div className="rounded-lg border border-border p-4 bg-card shadow-xs">
+                <h3 className="font-display font-bold text-base mb-2">Profil Layanan Tukang</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Sebagai mitra tukang TukangHub, Anda terdaftar di platform kami untuk menerima panggilan proyek atau pekerjaan pertukangan dari pelanggan.
+                </p>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2 text-sm border-b border-border pb-2">
+                    <span className="text-muted-foreground">Status Kemitraan:</span>
+                    <span className="font-semibold text-green-600">Aktif & Terverifikasi</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm border-b border-border pb-2">
+                    <span className="text-muted-foreground">Kontak Hubung:</span>
+                    <span className="font-semibold">{profile?.phone || "-"}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <span className="text-muted-foreground">Email Terdaftar:</span>
+                    <span className="font-semibold truncate">{user.email}</span>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </PublicShell>

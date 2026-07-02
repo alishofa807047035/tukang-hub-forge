@@ -365,3 +365,36 @@ export const grantAdminSelf = createServerFn({ method: "POST" })
     await supabaseAdmin.from("user_roles").insert({ user_id: context.userId, role: "admin" });
     return { ok: true };
   });
+
+export const adminSeedStandardCategories = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const standardCategories = [
+      { name: "Semen & Mortar", slug: "semen-mortar", icon: "Package" },
+      { name: "Pasir & Batu", slug: "pasir-batu", icon: "Layers" },
+      { name: "Besi & Baja", slug: "besi-baja", icon: "Hammer" },
+      { name: "Kayu & Papan", slug: "kayu-papan", icon: "Grid" },
+      { name: "Pipa & Sanitasi", slug: "pipa-sanitasi", icon: "Droplet" },
+      { name: "Cat & Perlengkapan", slug: "cat-perlengkapan", icon: "Paintbrush" },
+      { name: "Alat & Perkakas", slug: "alat-perkakas", icon: "Wrench" },
+      { name: "Atap & Plafon", slug: "atap-plafon", icon: "Home" },
+      { name: "Kelistrikan", slug: "kelistrikan", icon: "Zap" },
+    ];
+
+    for (const cat of standardCategories) {
+      const { data: existing } = await supabaseAdmin
+        .from("product_categories")
+        .select("id")
+        .eq("slug", cat.slug)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabaseAdmin.from("product_categories").insert(cat);
+      }
+    }
+
+    return { ok: true };
+  });

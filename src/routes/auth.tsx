@@ -24,6 +24,7 @@ const registerSchema = z.object({
   phone: z.string().min(6, "Nomor HP tidak valid"),
   email: z.string().email("Email tidak valid"),
   password: z.string().min(6, "Minimal 6 karakter"),
+  role: z.enum(["customer", "tukang"]),
 });
 
 function AuthPage() {
@@ -38,7 +39,7 @@ function AuthPage() {
   }, [user, redirect, navigate]);
 
   const login = useForm<z.infer<typeof loginSchema>>({ resolver: zodResolver(loginSchema), defaultValues: { email: "", password: "" } });
-  const register = useForm<z.infer<typeof registerSchema>>({ resolver: zodResolver(registerSchema), defaultValues: { fullname: "", phone: "", email: "", password: "" } });
+  const register = useForm<z.infer<typeof registerSchema>>({ resolver: zodResolver(registerSchema), defaultValues: { fullname: "", phone: "", email: "", password: "", role: "customer" } });
   const [forgotEmail, setForgotEmail] = useState("");
 
   async function onLogin(v: z.infer<typeof loginSchema>) {
@@ -50,7 +51,7 @@ function AuthPage() {
   async function onRegister(v: z.infer<typeof registerSchema>) {
     const { error } = await supabase.auth.signUp({
       email: v.email, password: v.password,
-      options: { emailRedirectTo: window.location.origin, data: { fullname: v.fullname, phone: v.phone } },
+      options: { emailRedirectTo: window.location.origin, data: { fullname: v.fullname, phone: v.phone, role: v.role } },
     });
     if (error) return toast.error(error.message);
     toast.success("Akun berhasil dibuat");
@@ -107,6 +108,35 @@ function AuthPage() {
               </TabsContent>
               <TabsContent value="register">
                 <form onSubmit={register.handleSubmit(onRegister)} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label>Daftar Sebagai</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => register.setValue("role", "customer")}
+                        className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition-all ${
+                          register.watch("role") === "customer"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">Pelanggan</span>
+                        <span className="text-[10px] text-muted-foreground">Belanja material & sewa tukang</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => register.setValue("role", "tukang")}
+                        className={`flex flex-col items-center gap-1 rounded-lg border p-3 text-center transition-all ${
+                          register.watch("role") === "tukang"
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">Mitra Tukang</span>
+                        <span className="text-[10px] text-muted-foreground">Tawarkan jasa pertukangan Anda</span>
+                      </button>
+                    </div>
+                  </div>
                   <div className="space-y-1"><Label>Nama Lengkap</Label><Input {...register.register("fullname")} />{register.formState.errors.fullname && <p className="text-xs text-destructive">{register.formState.errors.fullname.message}</p>}</div>
                   <div className="space-y-1"><Label>Nomor HP</Label><Input {...register.register("phone")} />{register.formState.errors.phone && <p className="text-xs text-destructive">{register.formState.errors.phone.message}</p>}</div>
                   <div className="space-y-1"><Label>Email</Label><Input type="email" {...register.register("email")} />{register.formState.errors.email && <p className="text-xs text-destructive">{register.formState.errors.email.message}</p>}</div>

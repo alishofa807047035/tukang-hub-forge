@@ -21,6 +21,7 @@ interface AuthContextValue {
   user: User | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isTukang: boolean;
   loading: boolean;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTukang, setIsTukang] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function loadProfile(userId: string) {
@@ -41,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
     setProfile(prof as Profile | null);
     setIsAdmin((roles ?? []).some((r) => r.role === "admin"));
+    setIsTukang((roles ?? []).some((r) => r.role === "tukang"));
   }
 
   async function refresh() {
@@ -69,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setIsTukang(false);
       }
     });
     return () => {
@@ -81,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setIsAdmin(false);
+    setIsTukang(false);
   }
 
   return (
@@ -90,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: session?.user ?? null,
         profile,
         isAdmin,
+        isTukang,
         loading,
         refresh,
         signOut,
